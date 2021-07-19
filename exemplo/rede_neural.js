@@ -19,7 +19,7 @@ function gradienteDescendente(n=0){
  * @param {resultado q queremos} alvo 
  * @param {vezes de trainamentos} epocas_treino 
  */
-function feedForward(entradas=[], alvo=0, epocas_treino=1){
+function feedForward(entradas=[], alvo=0, epocas_treino=1, func_ativacao= "sigmoide"){
     if(alvo<=0) alvo=0.1;
     else if(alvo>=1) alvo=1;
 
@@ -38,11 +38,23 @@ function feedForward(entradas=[], alvo=0, epocas_treino=1){
         }
 
         let somatoria = funcaoSomatoria(multiplicar);
-        let saida = parseFloat(Math.tanh(somatoria)).toFixed(4);
+
+        let saida = 0;
+        switch(func_ativacao){
+            case "tang_hiperbolica":saida  = parseFloat(tangenteHiperbolica(somatoria)).toFixed(4); break;
+            case "relu": saida  = parseFloat(relu(somatoria)).toFixed(4); break;
+            case "leakyRelu":saida  = parseFloat(leakyRelu(somatoria)).toFixed(4); break;
+            case "binaryStep":saida  = parseFloat(binaryStep(somatoria)).toFixed(4); break;
+            case "sigmoide": saida =  parseFloat(sigmoide(somatoria)).toFixed(4); break;
+            
+            default: saida =  parseFloat(sigmoide(somatoria)).toFixed(4);
+        }
+        
 
         let erro = parseFloat(Math.abs(alvo - saida)).toFixed(4);
 
         for(let j=0; j<entradas.length; j++){
+            if(entradas[j]<=0) entradas[j] = 0.1;
             peso[j] += entradas[j] * gradienteDescendente(erro);
         }
 
@@ -53,4 +65,16 @@ function feedForward(entradas=[], alvo=0, epocas_treino=1){
 
 }
 
-feedForward([2, 1], 0.1, 500);
+// ## Funções de ativação
+// tangente hiperbolica: retorna valores entre -1 e 1
+function tangenteHiperbolica(n=0) {return Math.sinh(n)/Math.cosh(n);}
+// função sigmóide: retorna valores entre 0 e 1
+function sigmoide(n=0) {return 1/ (1+ Math.pow(Math.E, -n));}
+// unidade linear retificada (relu): retorna somente valores nulos e positivos
+function  relu(n=0){return Math.max(n, 0); }
+// unidade linear retificada com vazamento (leaky relu): retorna somente valores maiores que zero
+function  leakyRelu(n=0){return Math.max(n, 0.01); }
+// passo binário: retorna somente 0 e 1 
+function binaryStep(n=0){return (n>= 0)? 1 : 0;} 
+
+feedForward([0], 0.1, 800);
